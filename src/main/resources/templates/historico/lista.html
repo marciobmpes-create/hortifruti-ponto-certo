@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico | Horti Fruti Ponto Certo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navegacao :: principal}"></div>
+    <main class="container">
+        <header class="cabecalho">
+            <div>
+                <p class="marca">Horti Fruti Ponto Certo</p>
+                <h1>Histórico de movimentações</h1>
+                <p class="subtitulo">Consulte as entradas, saídas e descartes registrados.</p>
+            </div>
+            <a class="botao" th:href="@{/produtos}">Voltar para produtos</a>
+        </header>
+
+        <p class="mensagem-sucesso" th:if="${sucesso}" th:text="${sucesso}"></p>
+
+        <section class="card filtros-card">
+            <form class="filtros" th:action="@{/historico}" method="get">
+                <div class="campo">
+                    <label for="produtoId">Produto</label>
+                    <select id="produtoId" name="produtoId">
+                        <option value="">Todos os produtos</option>
+                        <option th:each="produto : ${produtos}"
+                                th:value="${produto.id}"
+                                th:text="${produto.nome}"
+                                th:selected="${produto.id == produtoId}"></option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="tipo">Tipo</label>
+                    <select id="tipo" name="tipo">
+                        <option value="">Todos</option>
+                        <option value="ENTRADA" th:selected="${tipo == 'ENTRADA'}">Entrada</option>
+                        <option value="SAIDA" th:selected="${tipo == 'SAIDA'}">Saída</option>
+                        <option value="DESCARTE" th:selected="${tipo == 'DESCARTE'}">Descarte</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="dataInicial">Data inicial</label>
+                    <input id="dataInicial" name="dataInicial" type="date" th:value="${dataInicial}">
+                </div>
+
+                <div class="campo">
+                    <label for="dataFinal">Data final</label>
+                    <input id="dataFinal" name="dataFinal" type="date" th:value="${dataFinal}">
+                </div>
+
+                <div class="filtros-acoes">
+                    <button class="botao" type="submit">Filtrar</button>
+                    <a class="botao botao-secundario" th:href="@{/historico}">Limpar filtros</a>
+                </div>
+            </form>
+        </section>
+
+        <section class="card area-perigosa">
+            <div>
+                <h2>Área administrativa</h2>
+                <p>Apague os dados de demonstração e zere o estoque, mantendo os produtos cadastrados.</p>
+            </div>
+            <a class="botao botao-perigo" th:href="@{/historico/limpar}">Limpar histórico</a>
+        </section>
+
+        <section class="card tabela-responsiva">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Produto</th>
+                        <th>Tipo</th>
+                        <th>Quantidade</th>
+                        <th>Unidade</th>
+                        <th>Motivo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="movimentacao : ${movimentacoes}">
+                        <td th:text="${#temporals.format(movimentacao.data, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${movimentacao.produto.nome}"></td>
+                        <td th:text="${movimentacao.tipo}"></td>
+                        <td th:text="${movimentacao.quantidade}"></td>
+                        <td th:text="${movimentacao.produto.unidade}"></td>
+                        <td th:text="${movimentacao.motivo == null or movimentacao.motivo.isBlank() ? '-' : movimentacao.motivo}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(movimentacoes)}">
+                        <td colspan="6" class="vazio"
+                            th:text="${filtrosAplicados ? 'Nenhuma movimentação encontrada para os filtros selecionados.' : 'Nenhuma movimentação encontrada.'}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrada de estoque | Horti Fruti Ponto Certo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navegacao :: principal}"></div>
+    <main class="container formulario-container">
+        <a class="voltar" th:href="@{/produtos}">← Voltar para produtos</a>
+
+        <section class="card">
+            <p class="marca">Horti Fruti Ponto Certo</p>
+            <h1>Registrar entrada de estoque</h1>
+            <p class="subtitulo">Informe o produto e a quantidade recebida.</p>
+
+            <p class="erro-geral" th:if="${erro}" th:text="${erro}"></p>
+
+            <form th:action="@{/entradas}" method="post">
+                <div class="campo">
+                    <label for="produtoId">Produto</label>
+                    <select id="produtoId" name="produtoId" required>
+                        <option value="">Selecione um produto</option>
+                        <option th:each="produto : ${produtos}"
+                                th:value="${produto.id}"
+                                th:text="${produto.nome + ' (' + produto.quantidade + ' ' + produto.unidade + ')'}"
+                                th:selected="${produto.id == produtoId}"></option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="quantidade">Quantidade recebida</label>
+                    <input id="quantidade" name="quantidade" type="number" min="0.01" step="0.01"
+                           th:value="${quantidade}" required>
+                </div>
+
+                <fieldset class="grupo-opcional">
+                    <legend>Dados do lote (opcional)</legend>
+                    <div class="campo">
+                        <label for="codigoLote">Lote</label>
+                        <input id="codigoLote" name="codigoLote" type="text" th:value="${codigoLote}">
+                    </div>
+                    <div class="campo">
+                        <label for="dataValidade">Data de validade</label>
+                        <input id="dataValidade" name="dataValidade" type="date" th:value="${dataValidade}">
+                    </div>
+                    <small>Para registrar um lote, informe o código e a data de validade.</small>
+                </fieldset>
+
+                <button class="botao" type="submit">Confirmar entrada</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

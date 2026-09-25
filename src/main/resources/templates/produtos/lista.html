@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos | Horti Fruti Ponto Certo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navegacao :: principal}"></div>
+    <main class="container">
+        <header class="cabecalho">
+            <div>
+                <p class="marca">Horti Fruti Ponto Certo</p>
+                <h1>Produtos cadastrados</h1>
+                <p class="subtitulo">Consulte os produtos disponíveis no estoque.</p>
+            </div>
+            <div class="acoes">
+                <a class="botao" th:href="@{/produtos/novo}">Cadastrar produto</a>
+            </div>
+        </header>
+
+        <form class="ordenacao" th:action="@{/produtos}" method="get">
+            <label for="ordem">Ordenar por</label>
+            <select id="ordem" name="ordem" onchange="this.form.submit()">
+                <option value="NOME_ASC" th:selected="${ordem == 'NOME_ASC'}">Nome: A-Z</option>
+                <option value="NOME_DESC" th:selected="${ordem == 'NOME_DESC'}">Nome: Z-A</option>
+                <option value="QUANTIDADE_DESC" th:selected="${ordem == 'QUANTIDADE_DESC'}">Maior quantidade</option>
+                <option value="QUANTIDADE_ASC" th:selected="${ordem == 'QUANTIDADE_ASC'}">Menor quantidade</option>
+                <option value="CATEGORIA" th:selected="${ordem == 'CATEGORIA'}">Categoria</option>
+                <option value="ESTOQUE_BAIXO" th:selected="${ordem == 'ESTOQUE_BAIXO'}">Menor estoque primeiro</option>
+            </select>
+            <button class="botao botao-secundario" type="submit">Ordenar</button>
+        </form>
+
+        <p class="mensagem-sucesso" th:if="${sucesso}" th:text="${sucesso}"></p>
+        <p class="erro-geral" th:if="${erro}" th:text="${erro}"></p>
+
+        <section class="card tabela-responsiva">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Categoria</th>
+                        <th>Quantidade</th>
+                        <th>Unidade</th>
+                        <th>Estoque mínimo</th>
+                        <th>Situação</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="produto : ${produtos}">
+                        <td th:text="${produto.nome}"></td>
+                        <td th:text="${produto.categoria}"></td>
+                        <td th:text="${produto.quantidade}"></td>
+                        <td th:text="${produto.unidade}"></td>
+                        <td th:text="${produto.estoqueMinimo}"></td>
+                        <td>
+                            <span class="status status-zerado" th:if="${produto.quantidade == 0}">🔴 Estoque zerado</span>
+                            <span class="status status-baixo" th:if="${produto.quantidade > 0 and produto.quantidade <= produto.estoqueMinimo}">🟡 Estoque baixo</span>
+                            <span class="status status-normal" th:if="${produto.quantidade > produto.estoqueMinimo}">🟢 Estoque normal</span>
+                        </td>
+                        <td>
+                            <div class="acoes-tabela">
+                                <a class="botao botao-secundario" th:href="@{/produtos/{id}/editar(id=${produto.id})}">Editar</a>
+                                <a class="botao botao-perigo" th:href="@{/produtos/{id}/excluir(id=${produto.id})}">Excluir</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(produtos)}">
+                        <td colspan="7" class="vazio">Nenhum produto cadastrado.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>

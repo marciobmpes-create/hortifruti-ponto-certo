@@ -1,0 +1,14 @@
+<nav class="navegacao" th:fragment="principal" xmlns:th="http://www.thymeleaf.org" aria-label="Navegação principal">
+    <div class="navegacao-conteudo">
+        <a class="navegacao-marca" th:href="@{/produtos}">Horti Fruti Ponto Certo</a>
+        <div class="navegacao-links">
+            <a th:href="@{/produtos}">Produtos</a>
+            <a th:href="@{/entradas/nova}">Registrar entrada</a>
+            <a th:href="@{/saidas/nova}">Registrar saída</a>
+            <a th:href="@{/descartes/novo}">Registrar descarte</a>
+            <a th:href="@{/historico}">Histórico</a>
+            <a th:href="@{/relatorio}">Relatório</a>
+            <a th:href="@{/dashboard}">Dashboard</a>
+        </div>
+    </div>
+</nav>
