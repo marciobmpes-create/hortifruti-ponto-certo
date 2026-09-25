@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${produto.id == null ? 'Novo produto' : 'Editar produto'} + ' | Horti Fruti Ponto Certo'">Produto | Horti Fruti Ponto Certo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navegacao :: principal}"></div>
+    <main class="container formulario-container">
+        <a class="voltar" th:href="@{/produtos}">← Voltar para produtos</a>
+
+        <section class="card">
+            <p class="marca">Horti Fruti Ponto Certo</p>
+            <h1 th:text="${produto.id == null ? 'Cadastrar produto' : 'Editar produto'}">Cadastrar produto</h1>
+            <p class="subtitulo" th:text="${produto.id == null ? 'Preencha os dados abaixo para incluir um produto no estoque.' : 'Altere os dados necessários e salve as alterações.'}"></p>
+
+            <form th:action="${produto.id == null} ? @{/produtos} : @{/produtos/{id}(id=${produto.id})}" th:object="${produto}" method="post">
+                <div class="campo">
+                    <label for="nome">Nome</label>
+                    <input id="nome" type="text" th:field="*{nome}" required>
+                    <small class="erro" th:if="${#fields.hasErrors('nome')}" th:errors="*{nome}"></small>
+                </div>
+
+                <div class="campo">
+                    <label for="categoria">Categoria</label>
+                    <select id="categoria" th:field="*{categoria}" required>
+                        <option value="">Selecione uma categoria</option>
+                        <option value="Frutas">Frutas</option>
+                        <option value="Verduras">Verduras</option>
+                        <option value="Legumes">Legumes</option>
+                        <option value="Raízes e Tubérculos">Raízes e Tubérculos</option>
+                        <option value="Mercearia">Mercearia</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                    <small class="erro" th:if="${#fields.hasErrors('categoria')}" th:errors="*{categoria}"></small>
+                </div>
+
+                <div class="campo">
+                    <label for="quantidade">Quantidade</label>
+                    <input id="quantidade" type="number" th:field="*{quantidade}" min="0" step="0.01" required>
+                    <small class="erro" th:if="${#fields.hasErrors('quantidade')}" th:errors="*{quantidade}"></small>
+                </div>
+
+                <div class="campo">
+                    <label for="unidade">Unidade de medida</label>
+                    <input id="unidade" type="text" th:field="*{unidade}" placeholder="Ex.: kg, unidade ou maço" required>
+                    <small class="erro" th:if="${#fields.hasErrors('unidade')}" th:errors="*{unidade}"></small>
+                </div>
+
+                <div class="campo">
+                    <label for="estoqueMinimo">Estoque mínimo</label>
+                    <input id="estoqueMinimo" type="number" th:field="*{estoqueMinimo}" min="0" step="0.01" required>
+                    <small class="erro" th:if="${#fields.hasErrors('estoqueMinimo')}" th:errors="*{estoqueMinimo}"></small>
+                </div>
+
+                <button class="botao" type="submit" th:text="${produto.id == null ? 'Salvar produto' : 'Salvar alterações'}">Salvar produto</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excluir produto | Horti Fruti Ponto Certo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navegacao :: principal}"></div>
+    <main class="container formulario-container">
+        <a class="voltar" th:href="@{/produtos}">← Voltar para produtos</a>
+
+        <section class="card">
+            <p class="marca">Horti Fruti Ponto Certo</p>
+            <h1>Excluir produto</h1>
+            <p class="subtitulo">Tem certeza que deseja excluir o produto <strong th:text="${produto.nome}"></strong>?</p>
+
+            <form th:action="@{/produtos/{id}/excluir(id=${produto.id})}" method="post">
+                <div class="acoes">
+                    <button class="botao botao-perigo" type="submit">Confirmar exclusão</button>
+                    <a class="botao botao-secundario" th:href="@{/produtos}">Cancelar</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Limpar histórico | Horti Fruti Ponto Certo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navegacao :: principal}"></div>
+    <main class="container formulario-container">
+        <a class="voltar" th:href="@{/historico}">← Cancelar e voltar ao histórico</a>
+        <header class="cabecalho">
+            <div>
+                <p class="marca">Horti Fruti Ponto Certo</p>
+                <h1>Limpar histórico</h1>
+                <p class="subtitulo">Confirmação de limpeza dos dados de demonstração.</p>
+            </div>
+        </header>
+
+        <section class="card aviso-limpeza">
+            <h2>Atenção</h2>
+            <p>Esta ação irá apagar todas as movimentações de entrada, saída e descarte e zerar o estoque atual dos produtos. Os produtos cadastrados serão mantidos.</p>
+            <p>Os lotes registrados em entradas também serão removidos para não deixar dados inconsistentes.</p>
+        </section>
+
+        <p class="erro-geral" th:if="${erro}" th:text="${erro}"></p>
+
+        <form class="card" th:action="@{/historico/limpar}" method="post">
+            <div class="campo">
+                <label for="senha">Senha</label>
+                <input id="senha" name="senha" type="password" required autocomplete="off">
+            </div>
+            <div class="campo">
+                <label for="confirmacao">Digite CONFIRMAR para continuar</label>
+                <input id="confirmacao" name="confirmacao" type="text" required autocomplete="off">
+            </div>
+            <div class="acoes">
+                <button class="botao botao-perigo" type="submit">Confirmar limpeza</button>
+                <a class="botao botao-secundario" th:href="@{/historico}">Cancelar</a>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

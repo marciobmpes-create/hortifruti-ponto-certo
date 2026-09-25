@@ -1,0 +1,5 @@
+target/
+apache-maven-3.9.16/
+.vscode/
+*.class
+*.log

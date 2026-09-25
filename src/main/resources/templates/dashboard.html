@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Horti Fruti Ponto Certo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navegacao :: principal}"></div>
+    <main class="container">
+        <header class="cabecalho">
+            <div>
+                <p class="marca">Horti Fruti Ponto Certo</p>
+                <h1>Dashboard</h1>
+                <p class="subtitulo">Resumo simples do estoque e das movimentações.</p>
+            </div>
+            <a class="botao" th:href="@{/produtos}">Voltar para produtos</a>
+        </header>
+
+        <section class="card filtros-card">
+            <form class="filtros" th:action="@{/dashboard}" method="get">
+                <div class="campo">
+                    <label for="periodo">Período das movimentações</label>
+                    <select id="periodo" name="periodo">
+                        <option value="HOJE" th:selected="${periodo == 'HOJE'}">Hoje</option>
+                        <option value="ULTIMOS_7_DIAS" th:selected="${periodo == 'ULTIMOS_7_DIAS'}">Últimos 7 dias</option>
+                        <option value="MES_ATUAL" th:selected="${periodo == 'MES_ATUAL'}">Mês atual</option>
+                        <option value="PERSONALIZADO" th:selected="${periodo == 'PERSONALIZADO'}">Período personalizado</option>
+                    </select>
+                </div>
+                <div class="campo">
+                    <label for="dataInicial">Data inicial</label>
+                    <input id="dataInicial" name="dataInicial" type="date" th:value="${dataInicial}">
+                </div>
+                <div class="campo">
+                    <label for="dataFinal">Data final</label>
+                    <input id="dataFinal" name="dataFinal" type="date" th:value="${dataFinal}">
+                </div>
+                <div class="filtros-acoes"><button class="botao" type="submit">Aplicar período</button></div>
+            </form>
+        </section>
+
+        <p class="aviso-periodo">Os indicadores de movimentação abaixo consideram o período selecionado. O estoque representa a quantidade atual.</p>
+
+        <section class="indicadores">
+            <article class="card indicador">
+                <h2>Produtos cadastrados</h2>
+                <p th:text="${totalProdutos}"></p>
+            </article>
+            <article class="card indicador">
+                <h2>Itens em estoque</h2>
+                <p th:text="${quantidadeEmEstoque}"></p>
+                <small>Soma sem conversão de unidades.</small>
+            </article>
+            <article class="card indicador">
+                <h2>Entradas no período</h2>
+                <p th:text="${totalEntradas}"></p>
+            </article>
+            <article class="card indicador">
+                <h2>Saídas no período</h2>
+                <p th:text="${totalSaidas}"></p>
+            </article>
+            <article class="card indicador">
+                <h2>Descartes no período</h2>
+                <p th:text="${totalDescartes}"></p>
+            </article>
+            <article class="card indicador">
+                <h2>Quantidade descartada no período</h2>
+                <p th:text="${quantidadeDescartada}"></p>
+            </article>
+            <article class="card indicador">
+                <h2>Taxa de desperdício</h2>
+                <p th:if="${taxaDesperdicio != null}" th:text="${#numbers.formatDecimal(taxaDesperdicio, 1, 2) + '%'}"></p>
+                <small th:if="${taxaDesperdicio == null}">Não há dados suficientes para calcular a taxa.</small>
+                <small th:if="${taxaDesperdicio != null}">Descarte ÷ total movimentado. Sem conversão de unidades.</small>
+            </article>
+        </section>
+
+        <section class="secao-dashboard">
+            <h2>Produtos com estoque baixo</h2>
+            <div class="card tabela-responsiva">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Categoria</th>
+                            <th>Quantidade</th>
+                            <th>Unidade</th>
+                            <th>Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="produto : ${produtosEstoqueBaixo}">
+                            <td th:text="${produto.nome}"></td>
+                            <td th:text="${produto.categoria}"></td>
+                            <td th:text="${produto.quantidade}"></td>
+                            <td th:text="${produto.unidade}"></td>
+                            <td>
+                                <span th:if="${produto.quantidade == 0}">🔴 Estoque zerado</span>
+                                <span th:if="${produto.quantidade > 0}">🟡 Estoque baixo</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(produtosEstoqueBaixo)}">
+                            <td colspan="5" class="vazio">Nenhum produto com estoque baixo.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="secao-dashboard">
+            <h2>Resumo de desperdício</h2>
+            <div class="card tabela-responsiva">
+                <p th:if="${motivoMaisFrequente != null}"><strong>Motivo mais frequente:</strong> <span th:text="${motivoMaisFrequente}"></span></p>
+                <p th:if="${motivoMaisFrequente == null}">Nenhum descarte no período selecionado.</p>
+                <table th:if="${not #lists.isEmpty(resumoDesperdicio)}">
+                    <thead><tr><th>Produto</th><th>Quantidade descartada</th><th>Unidade</th></tr></thead>
+                    <tbody>
+                        <tr th:each="resumo : ${resumoDesperdicio}">
+                            <td th:text="${resumo.produto.nome}"></td>
+                            <td th:text="${resumo.quantidadeDescartada}"></td>
+                            <td th:text="${resumo.produto.unidade}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="secao-dashboard">
+            <h2>Produtos próximos do vencimento</h2>
+            <div class="card tabela-responsiva">
+                <table>
+                    <thead><tr><th>Produto</th><th>Lote</th><th>Validade</th><th>Quantidade</th><th>Situação</th></tr></thead>
+                    <tbody>
+                        <tr th:each="lote : ${lotesProximos}">
+                            <td th:text="${lote.produto.nome}"></td>
+                            <td th:text="${lote.codigo}"></td>
+                            <td th:text="${#temporals.format(lote.dataValidade, 'dd/MM/yyyy')}"></td>
+                            <td th:text="${lote.quantidade + ' ' + lote.produto.unidade}"></td>
+                            <td th:text="${lote.dataValidade.isBefore(hoje) ? '🔴 Vencido' : '⚠️ Próximo do vencimento'}"></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(lotesProximos)}"><td colspan="5" class="vazio">Nenhum lote próximo do vencimento.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
