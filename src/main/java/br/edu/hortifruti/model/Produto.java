@@ -35,7 +35,7 @@ public class Produto {
     @NotBlank(message = "Informe a unidade de medida.")
     private String unidade;
 
-    @Column(nullable = false, columnDefinition = "DOUBLE DEFAULT 5.0")
+    @Column(nullable = false)
     @NotNull(message = "Informe o estoque mínimo.")
     @PositiveOrZero(message = "O estoque mínimo não pode ser negativo.")
     private Double estoqueMinimo = 5.0;
