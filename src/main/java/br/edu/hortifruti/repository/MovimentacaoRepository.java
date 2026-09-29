@@ -23,8 +23,8 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
             SELECT m FROM Movimentacao m
             WHERE (:produtoId IS NULL OR m.produto.id = :produtoId)
               AND (:tipo IS NULL OR m.tipo = :tipo)
-              AND (:dataInicial IS NULL OR m.data >= COALESCE(:dataInicial, :dataInicial))
-              AND (:dataFinal IS NULL OR m.data <= COALESCE(:dataFinal, :dataFinal))
+              AND m.data >= COALESCE(:dataInicial, m.data)
+                AND m.data <= COALESCE(:dataFinal, m.data)
             ORDER BY m.data DESC, m.id DESC
             """)
     List<Movimentacao> buscarComFiltros(
