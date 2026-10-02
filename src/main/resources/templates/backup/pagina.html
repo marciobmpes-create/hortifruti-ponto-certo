@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backup | Horti Fruti Ponto Certo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+    <div th:replace="~{fragments/navegacao :: principal}"></div>
+
+    <main class="container formulario-container">
+
+        <header class="cabecalho">
+            <div>
+                <p class="marca">Horti Fruti Ponto Certo</p>
+                <h1>Backup</h1>
+                <p class="subtitulo">
+                    Baixe uma cópia dos produtos, lotes e movimentações
+                    em um arquivo JSON.
+                </p>
+            </div>
+        </header>
+
+        <!-- EXPORTAÇÃO -->
+
+        <section class="card">
+            <p>
+                O arquivo é gerado somente para leitura:
+                nenhum dado do sistema é alterado ou apagado.
+                Guarde a cópia em um local seguro.
+            </p>
+
+            <p>
+                Por segurança, informe a senha administrativa
+                para liberar o download.
+            </p>
+        </section>
+
+        <p
+            class="erro-geral"
+            th:if="${erro}"
+            th:text="${erro}">
+        </p>
+
+        <form
+            class="card"
+            th:action="@{/backup/download}"
+            method="post">
+
+            <div class="campo">
+                <label for="senha">Senha</label>
+
+                <input
+                    id="senha"
+                    name="senha"
+                    type="password"
+                    required
+                    autocomplete="off">
+            </div>
+
+            <div class="acoes">
+                <button
+                    class="botao"
+                    type="submit">
+                    Baixar backup
+                </button>
+            </div>
+
+        </form>
+
+        <!-- RESTAURAÇÃO -->
+
+        <section class="card">
+
+            <h2>Restaurar backup</h2>
+
+            <p>
+                Envie um arquivo JSON gerado por este sistema.
+                Produtos, lotes e movimentações do arquivo serão
+                criados com os IDs originais ou, se o ID já existir,
+                atualizados com os dados do arquivo.
+            </p>
+
+            <p>
+                Nenhum registro é apagado.
+                O que existe no sistema e não consta no arquivo
+                permanece como está.
+            </p>
+
+            <p>
+                Informe a senha administrativa para liberar a restauração.
+            </p>
+
+        </section>
+
+        <p
+            class="erro-geral"
+            th:if="${erroRestauracao}"
+            th:text="${erroRestauracao}">
+        </p>
+
+        <p
+            class="card"
+            style="border-left: 4px solid #2e7d32;"
+            th:if="${sucessoRestauracao}"
+            th:text="${sucessoRestauracao}">
+        </p>
+
+        <form
+            class="card"
+            th:action="@{/backup/restore}"
+            method="post"
+            enctype="multipart/form-data"
+            onsubmit="return confirm('Atenção: a restauração vai criar e atualizar produtos, lotes e movimentações com os dados do arquivo. Registros que já existem com o mesmo ID serão sobrescritos. Deseja continuar?');">
+
+            <div class="campo">
+
+                <label for="arquivo">
+                    Arquivo JSON
+                </label>
+
+                <input
+                    id="arquivo"
+                    name="arquivo"
+                    type="file"
+                    accept=".json,application/json"
+                    required>
+
+            </div>
+
+            <div class="campo">
+
+                <label for="senhaRestauracao">
+                    Senha
+                </label>
+
+                <input
+                    id="senhaRestauracao"
+                    name="senha"
+                    type="password"
+                    required
+                    autocomplete="off">
+
+            </div>
+
+            <div class="acoes">
+
+                <button
+                    class="botao"
+                    type="submit">
+                    Restaurar backup
+                </button>
+
+            </div>
+
+        </form>
+
+    </main>
+
+</body>
+</html>

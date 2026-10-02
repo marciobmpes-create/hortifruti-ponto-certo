@@ -1,6 +1,7 @@
 package br.edu.hortifruti.service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -77,7 +78,7 @@ public class MovimentacaoService {
                 lote,
                 "ENTRADA",
                 quantidade,
-                LocalDate.now(),
+                LocalDate.now(ZoneId.of("America/Sao_Paulo")),
                 null);
         movimentacaoRepository.save(movimentacao);
     }
@@ -106,7 +107,7 @@ public class MovimentacaoService {
                 produto,
                 "SAIDA",
                 quantidade,
-                LocalDate.now(),
+                LocalDate.now(ZoneId.of("America/Sao_Paulo")),
                 null);
         movimentacaoRepository.save(movimentacao);
     }
@@ -139,7 +140,7 @@ public class MovimentacaoService {
                 produto,
                 "DESCARTE",
                 quantidade,
-                LocalDate.now(),
+                LocalDate.now(ZoneId.of("America/Sao_Paulo")),
                 motivo);
         movimentacaoRepository.save(movimentacao);
     }
