@@ -41,6 +41,159 @@ public class MovimentacaoService {
             LocalDate dataInicial, LocalDate dataFinal) {
         return movimentacaoRepository.buscarComFiltros(produtoId, tipo, dataInicial, dataFinal);
     }
+    private static final ZoneId FUSO_HORARIO = ZoneId.of("America/Sao_Paulo");
+
+public LocalDate hoje() {
+    return LocalDate.now(FUSO_HORARIO);
+}
+
+@Transactional(readOnly = true)
+public Movimentacao buscarPorId(Long id) {
+    return movimentacaoRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Movimentação não encontrada."));
+}
+
+@Transactional
+public void atualizarData(Long id, LocalDate novaData, String senha) {
+    if (!senhaLimpeza.equals(senha)) {
+        throw new IllegalArgumentException("Senha incorreta. Nenhum dado foi alterado.");
+    }
+
+    if (id == null) {
+        throw new IllegalArgumentException("Movimentação não informada.");
+    }
+
+    if (novaData == null) {
+        throw new IllegalArgumentException("Informe a nova data.");
+    }
+
+    if (novaData.isAfter(hoje())) {
+        throw new IllegalArgumentException("A nova data não pode ser uma data futura.");
+    }
+
+    if (!movimentacaoRepository.existsById(id)) {
+        throw new IllegalArgumentException("Movimentação não encontrada.");
+    }
+
+   Movimentacao movimentacao = buscarPorId(id);
+
+List<Movimentacao> movimentacoesDoProduto =
+        movimentacaoRepository.findByProduto_IdOrderByDataAscIdAsc(
+                movimentacao.getProduto().getId());
+
+List<Movimentacao> movimentacoesOrdenadas = movimentacoesDoProduto.stream()
+        .sorted((a, b) -> {
+            LocalDate dataA = a.getId().equals(id) ? novaData : a.getData();
+            LocalDate dataB = b.getId().equals(id) ? novaData : b.getData();
+
+            int comparacaoData = dataA.compareTo(dataB);
+
+            if (comparacaoData != 0) {
+                return comparacaoData;
+            }
+
+            return a.getId().compareTo(b.getId());
+        })
+        .toList();
+
+double estoqueCronologico = 0.0;
+
+for (Movimentacao outra : movimentacoesOrdenadas) {
+
+    if ("ENTRADA".equals(outra.getTipo())) {
+        estoqueCronologico += outra.getQuantidade();
+
+    } else if ("SAIDA".equals(outra.getTipo())
+            || "DESCARTE".equals(outra.getTipo())) {
+
+        estoqueCronologico -= outra.getQuantidade();
+
+        if (estoqueCronologico < 0) {
+            throw new IllegalArgumentException(
+                    "A nova data deixaria o histórico do produto com estoque negativo.");
+        }
+    }
+}
+
+    int linhasAfetadas = movimentacaoRepository.atualizarSomenteData(id, novaData);
+
+    if (linhasAfetadas != 1) {
+        throw new IllegalStateException(
+                "A atualização afetaria " + linhasAfetadas
+                        + " registros em vez de 1. Operação desfeita.");
+    }
+}
+
+@Transactional
+public void apagarMovimentacao(Long id, String senha) {
+    if (!senhaLimpeza.equals(senha)) {
+        throw new IllegalArgumentException("Senha incorreta. Nenhum dado foi alterado.");
+    }
+
+    if (id == null) {
+        throw new IllegalArgumentException("Movimentação não informada.");
+    }
+
+    Movimentacao movimentacao = movimentacaoRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Movimentação não encontrada."));
+
+    Produto produto = movimentacao.getProduto();
+
+    List<Movimentacao> movimentacoesDoProduto =
+            movimentacaoRepository.findByProduto_IdOrderByDataAscIdAsc(produto.getId());
+
+    List<Movimentacao> movimentacoesSemAExcluida = movimentacoesDoProduto.stream()
+            .filter(outra -> !outra.getId().equals(id))
+            .toList();
+
+    double estoqueCronologico = 0.0;
+
+    for (Movimentacao outra : movimentacoesSemAExcluida) {
+
+        if ("ENTRADA".equals(outra.getTipo())) {
+            estoqueCronologico += outra.getQuantidade();
+
+        } else if ("SAIDA".equals(outra.getTipo())
+                || "DESCARTE".equals(outra.getTipo())) {
+
+            estoqueCronologico -= outra.getQuantidade();
+
+            if (estoqueCronologico < 0) {
+                throw new IllegalArgumentException(
+                        "Não é possível apagar esta movimentação porque o histórico do produto ficaria com estoque negativo.");
+            }
+        }
+    }
+
+    double quantidade = movimentacao.getQuantidade();
+
+    if ("ENTRADA".equals(movimentacao.getTipo())) {
+        if (quantidade > produto.getQuantidade()) {
+            throw new IllegalArgumentException(
+                    "Não é possível apagar esta entrada porque a quantidade já foi utilizada pelo estoque.");
+        }
+
+        produto.setQuantidade(produto.getQuantidade() - quantidade);
+
+    } else if ("SAIDA".equals(movimentacao.getTipo())
+            || "DESCARTE".equals(movimentacao.getTipo())) {
+
+        produto.setQuantidade(produto.getQuantidade() + quantidade);
+
+    } else {
+        throw new IllegalArgumentException("Tipo de movimentação inválido.");
+    }
+
+    produtoRepository.save(produto);
+
+    int linhasAfetadas = movimentacaoRepository.apagarPorId(id);
+
+    if (linhasAfetadas != 1) {
+        throw new IllegalStateException(
+                "A exclusão afetaria " + linhasAfetadas
+                        + " registros em vez de 1. Operação desfeita.");
+    }
+}
 
     @Transactional
     public void registrarEntrada(Long produtoId, Double quantidade) {
@@ -67,6 +220,10 @@ public class MovimentacaoService {
         boolean informouLote = codigoLote != null && !codigoLote.isBlank();
         if (informouLote != (dataValidade != null)) {
             throw new IllegalArgumentException("Informe o código e a validade do lote, ou deixe ambos vazios.");
+        }
+
+        if (dataValidade != null && dataValidade.isBefore(hoje())) {
+         throw new IllegalArgumentException("A data de validade não pode ser anterior à data atual.");
         }
 
         if (informouLote) {

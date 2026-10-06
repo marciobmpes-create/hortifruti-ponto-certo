@@ -102,6 +102,8 @@ public class DashboardService {
     }
 
     public List<Lote> listarLotesProximosDaValidade() {
-        return loteRepository.findByDataValidadeLessThanEqualOrderByDataValidadeAsc(LocalDate.now().plusDays(7));
-    }
+    return loteRepository.findAll().stream()
+            .sorted(Comparator.comparing(Lote::getDataValidade))
+            .toList();
+}
 }

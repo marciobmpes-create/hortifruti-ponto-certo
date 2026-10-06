@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -24,7 +25,7 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
             WHERE (:produtoId IS NULL OR m.produto.id = :produtoId)
               AND (:tipo IS NULL OR m.tipo = :tipo)
               AND m.data >= COALESCE(:dataInicial, m.data)
-                AND m.data <= COALESCE(:dataFinal, m.data)
+              AND m.data <= COALESCE(:dataFinal, m.data)
             ORDER BY m.data DESC, m.id DESC
             """)
     List<Movimentacao> buscarComFiltros(
@@ -32,4 +33,15 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
             @Param("tipo") String tipo,
             @Param("dataInicial") LocalDate dataInicial,
             @Param("dataFinal") LocalDate dataFinal);
+
+        List<Movimentacao> findByProduto_IdOrderByDataAscIdAsc(Long produtoId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Movimentacao m SET m.data = :novaData WHERE m.id = :id")
+    int atualizarSomenteData(
+            @Param("id") Long id,
+            @Param("novaData") LocalDate novaData);
+            @Modifying
+        @Query("DELETE FROM Movimentacao m WHERE m.id = :id")
+        int apagarPorId(@Param("id") Long id);
 }

@@ -19,6 +19,7 @@
         </header>
 
         <p class="mensagem-sucesso" th:if="${sucesso}" th:text="${sucesso}"></p>
+        <p class="erro-geral" th:if="${erro}" th:text="${erro}"></p>
 
         <section class="card filtros-card">
             <form class="filtros" th:action="@{/historico}" method="get">
@@ -78,6 +79,7 @@
                         <th>Quantidade</th>
                         <th>Unidade</th>
                         <th>Motivo</th>
+                        <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,9 +90,33 @@
                         <td th:text="${movimentacao.quantidade}"></td>
                         <td th:text="${movimentacao.produto.unidade}"></td>
                         <td th:text="${movimentacao.motivo == null or movimentacao.motivo.isBlank() ? '-' : movimentacao.motivo}"></td>
+                        <td>
+    <a class="botao botao-secundario"
+       th:href="@{/historico/{id}/editar-data(id=${movimentacao.id})}">
+        Editar data
+    </a>
+
+    <form th:action="@{/historico/{id}/apagar(id=${movimentacao.id})}"
+      method="post"
+      style="display: inline;"
+      onsubmit="return confirm('Tem certeza que deseja apagar esta movimentação? O estoque será ajustado automaticamente.');">
+
+    <input type="password"
+       name="senha"
+       placeholder="Senha"
+       autocomplete="off"
+       required
+       style="width: 110px;">
+
+    <button class="botao botao-secundario"
+            type="submit">
+        Apagar
+    </button>
+</form>
+</td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(movimentacoes)}">
-                        <td colspan="6" class="vazio"
+                        <td colspan="7" class="vazio"
                             th:text="${filtrosAplicados ? 'Nenhuma movimentação encontrada para os filtros selecionados.' : 'Nenhuma movimentação encontrada.'}"></td>
                     </tr>
                 </tbody>

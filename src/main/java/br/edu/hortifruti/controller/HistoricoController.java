@@ -6,11 +6,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import br.edu.hortifruti.model.Movimentacao;
 import br.edu.hortifruti.service.MovimentacaoService;
 import br.edu.hortifruti.service.ProdutoService;
 
@@ -68,4 +70,79 @@ public class HistoricoController {
             return "historico/confirmar-limpeza";
         }
     }
+
+    @GetMapping("/{id}/editar-data")
+public String exibirEdicaoData(@PathVariable Long id,
+        Model model,
+        RedirectAttributes atributosRedirecionamento) {
+    try {
+        Movimentacao movimentacao = movimentacaoService.buscarPorId(id);
+        model.addAttribute("movimentacao", movimentacao);
+        model.addAttribute("hoje", movimentacaoService.hoje());
+        return "historico/editar-data";
+    } catch (IllegalArgumentException erro) {
+        atributosRedirecionamento.addFlashAttribute("erro", erro.getMessage());
+        return "redirect:/historico";
+    }
+}
+
+@PostMapping("/{id}/editar-data")
+public String atualizarData(@PathVariable Long id,
+        @RequestParam(required = false) String novaData,
+        @RequestParam(required = false) String senha,
+        Model model,
+        RedirectAttributes atributosRedirecionamento) {
+    try {
+        LocalDate data = novaData == null || novaData.isBlank()
+                ? null
+                : LocalDate.parse(novaData);
+
+        movimentacaoService.atualizarData(id, data, senha);
+
+        atributosRedirecionamento.addFlashAttribute("sucesso",
+                "Data da movimentação atualizada com sucesso.");
+
+        return "redirect:/historico";
+    } catch (IllegalArgumentException erro) {
+        Movimentacao movimentacao;
+
+        try {
+            movimentacao = movimentacaoService.buscarPorId(id);
+        } catch (IllegalArgumentException naoEncontrada) {
+            atributosRedirecionamento.addFlashAttribute("erro",
+                    naoEncontrada.getMessage());
+            return "redirect:/historico";
+        }
+
+        model.addAttribute("movimentacao", movimentacao);
+        model.addAttribute("hoje", movimentacaoService.hoje());
+        model.addAttribute("erro", erro.getMessage());
+
+        return "historico/editar-data";
+    }
+}
+    @PostMapping("/{id}/apagar")
+public String apagarMovimentacao(
+        @PathVariable Long id,
+        @RequestParam(required = false) String senha,
+        Model model,
+        RedirectAttributes atributosRedirecionamento) {
+
+    try {
+        movimentacaoService.apagarMovimentacao(id, senha);
+
+        atributosRedirecionamento.addFlashAttribute(
+                "sucesso",
+                "Movimentação apagada com sucesso. O estoque foi ajustado.");
+
+        return "redirect:/historico";
+
+    } catch (IllegalArgumentException erro) {
+        atributosRedirecionamento.addFlashAttribute(
+                "erro",
+                erro.getMessage());
+
+        return "redirect:/historico";
+    }
+}
 }

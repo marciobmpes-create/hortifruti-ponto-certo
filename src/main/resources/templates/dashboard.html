@@ -138,8 +138,13 @@
                             <td th:text="${lote.codigo}"></td>
                             <td th:text="${#temporals.format(lote.dataValidade, 'dd/MM/yyyy')}"></td>
                             <td th:text="${lote.quantidade + ' ' + lote.produto.unidade}"></td>
-                            <td th:text="${lote.dataValidade.isBefore(hoje) ? '🔴 Vencido' : '⚠️ Próximo do vencimento'}"></td>
-                        </tr>
+                            <td>
+                            <span th:if="${lote.dataValidade.isBefore(hoje)}">🔴 Vencido</span>
+                            <span th:if="${!lote.dataValidade.isBefore(hoje) and !lote.dataValidade.isAfter(hoje.plusDays(7))}">
+                            🟠 Próximo do vencimento
+                            </span>
+                            <span th:if="${lote.dataValidade.isAfter(hoje.plusDays(7))}">🟢 Válido</span>
+</td>
                         <tr th:if="${#lists.isEmpty(lotesProximos)}"><td colspan="5" class="vazio">Nenhum lote próximo do vencimento.</td></tr>
                     </tbody>
                 </table>

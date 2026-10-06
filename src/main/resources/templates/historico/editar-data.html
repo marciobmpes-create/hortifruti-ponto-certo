@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar data da movimentação | Horti Fruti Ponto Certo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<div th:replace="~{fragments/navegacao :: principal}"></div>
+
+<main class="container formulario-container">
+    <a class="voltar" th:href="@{/historico}">← Voltar para o histórico</a>
+
+    <section class="card">
+        <p class="marca">Horti Fruti Ponto Certo</p>
+
+        <h1>Editar data da movimentação</h1>
+
+        <p class="subtitulo">
+            Somente a data pode ser alterada.
+            Os demais dados abaixo são apenas para conferência.
+        </p>
+
+        <p class="erro-geral" th:if="${erro}" th:text="${erro}"></p>
+
+        <div class="tabela-responsiva">
+            <table>
+                <tbody>
+                    <tr>
+                        <th>Produto</th>
+                        <td th:text="${movimentacao.produto.nome}"></td>
+                    </tr>
+
+                    <tr>
+                        <th>Tipo</th>
+                        <td th:text="${movimentacao.tipo}"></td>
+                    </tr>
+
+                    <tr>
+                        <th>Quantidade</th>
+                        <td th:text="${movimentacao.quantidade + ' ' + movimentacao.produto.unidade}"></td>
+                    </tr>
+
+                    <tr>
+                        <th>Motivo</th>
+                        <td th:text="${movimentacao.motivo == null or movimentacao.motivo.isBlank() ? '-' : movimentacao.motivo}"></td>
+                    </tr>
+
+                    <tr>
+                        <th>Lote</th>
+                        <td th:text="${movimentacao.lote == null ? '-' : movimentacao.lote.codigo}"></td>
+                    </tr>
+
+                    <tr>
+                        <th>Data atual</th>
+                        <td th:text="${#temporals.format(movimentacao.data, 'dd/MM/yyyy')}"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <form th:action="@{/historico/{id}/editar-data(id=${movimentacao.id})}"
+              method="post"
+              onsubmit="return confirm('Confirma a alteração da data desta movimentação? Nenhum outro dado será alterado.');">
+
+            <div class="campo">
+                <label for="novaData">Nova data</label>
+
+                <input id="novaData"
+                       name="novaData"
+                       type="date"
+                       th:value="${movimentacao.data}"
+                       th:max="${hoje}"
+                       required>
+
+                <small>
+                    A nova data pode ser hoje ou uma data anterior.
+                    Datas futuras não são permitidas.
+                </small>
+            </div>
+
+            <div class="campo">
+                <label for="senha">Senha administrativa</label>
+
+                <input id="senha"
+                       name="senha"
+                       type="password"
+                       autocomplete="off"
+                       required>
+            </div>
+
+            <div class="acoes">
+                <button class="botao" type="submit">Salvar data</button>
+
+                <a class="botao botao-secundario"
+                   th:href="@{/historico}">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </section>
+</main>
+
+</body>
+</html>
