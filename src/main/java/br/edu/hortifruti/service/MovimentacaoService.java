@@ -139,12 +139,19 @@ public void apagarMovimentacao(Long id, String senha) {
 
     Produto produto = movimentacao.getProduto();
 
-    List<Movimentacao> movimentacoesDoProduto =
-            movimentacaoRepository.findByProduto_IdOrderByDataAscIdAsc(produto.getId());
+    
+// A validação cronológica é necessária somente ao excluir uma entrada.
+// Excluir uma saída ou descarte devolve quantidade ao estoque.
+if ("ENTRADA".equals(movimentacao.getTipo())) {
 
-    List<Movimentacao> movimentacoesSemAExcluida = movimentacoesDoProduto.stream()
-            .filter(outra -> !outra.getId().equals(id))
-            .toList();
+    List<Movimentacao> movimentacoesDoProduto =
+            movimentacaoRepository.findByProduto_IdOrderByDataAscIdAsc(
+                    produto.getId());
+
+    List<Movimentacao> movimentacoesSemAExcluida =
+            movimentacoesDoProduto.stream()
+                    .filter(outra -> !outra.getId().equals(id))
+                    .toList();
 
     double estoqueCronologico = 0.0;
 
@@ -160,10 +167,13 @@ public void apagarMovimentacao(Long id, String senha) {
 
             if (estoqueCronologico < 0) {
                 throw new IllegalArgumentException(
-                        "Não é possível apagar esta movimentação porque o histórico do produto ficaria com estoque negativo.");
+                        "Não é possível apagar esta entrada porque o histórico do produto ficaria com estoque negativo.");
             }
         }
     }
+}
+
+
 
     double quantidade = movimentacao.getQuantidade();
 
