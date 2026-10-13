@@ -38,12 +38,6 @@
                 </div>
 
                 <div class="campo">
-                    <label for="quantidade">Quantidade</label>
-                    <input id="quantidade" type="number" th:field="*{quantidade}" min="0" step="0.01" required>
-                    <small class="erro" th:if="${#fields.hasErrors('quantidade')}" th:errors="*{quantidade}"></small>
-                </div>
-
-                <div class="campo">
                     <label for="unidade">Unidade de medida</label>
                     <input id="unidade" type="text" th:field="*{unidade}" placeholder="Ex.: kg, unidade ou maço" required>
                     <small class="erro" th:if="${#fields.hasErrors('unidade')}" th:errors="*{unidade}"></small>

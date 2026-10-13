@@ -49,9 +49,10 @@ public class ProdutoService {
         return 2;
     }
 
-    public Produto salvar(Produto produto) {
-        return produtoRepository.save(produto);
-    }
+   public Produto salvar(Produto produto) {
+    produto.setQuantidade(0.0);
+    return produtoRepository.save(produto);
+}
 
     public Produto buscarPorId(Long id) {
         return produtoRepository.findById(id)
@@ -62,7 +63,6 @@ public class ProdutoService {
         Produto produto = buscarPorId(id);
         produto.setNome(dadosProduto.getNome());
         produto.setCategoria(dadosProduto.getCategoria());
-        produto.setQuantidade(dadosProduto.getQuantidade());
         produto.setUnidade(dadosProduto.getUnidade());
         produto.setEstoqueMinimo(dadosProduto.getEstoqueMinimo());
         return produtoRepository.save(produto);

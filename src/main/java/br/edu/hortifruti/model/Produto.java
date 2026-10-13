@@ -29,7 +29,7 @@ public class Produto {
     @Column(nullable = false)
     @NotNull(message = "Informe a quantidade disponível.")
     @PositiveOrZero(message = "A quantidade não pode ser negativa.")
-    private Double quantidade;
+    private Double quantidade = 0.0;
 
     @Column(nullable = false)
     @NotBlank(message = "Informe a unidade de medida.")
