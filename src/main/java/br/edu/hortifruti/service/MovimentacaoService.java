@@ -53,6 +53,26 @@ public Movimentacao buscarPorId(Long id) {
             .orElseThrow(() -> new IllegalArgumentException("Movimentação não encontrada."));
 }
 
+
+private double calcularEstoqueInicialHistorico(Produto produto, List<Movimentacao> movimentacoes) {
+
+    double totalEntradas = 0.0;
+    double totalSaidas = 0.0;
+
+    for (Movimentacao movimentacao : movimentacoes) {
+        if ("ENTRADA".equals(movimentacao.getTipo())) {
+            totalEntradas += movimentacao.getQuantidade();
+
+        } else if ("SAIDA".equals(movimentacao.getTipo())
+                || "DESCARTE".equals(movimentacao.getTipo())) {
+            totalSaidas += movimentacao.getQuantidade();
+        }
+    }
+
+    return produto.getQuantidade() - totalEntradas + totalSaidas;
+}
+
+
 @Transactional
 public void atualizarData(Long id, LocalDate novaData, String senha) {
     if (!senhaLimpeza.equals(senha)) {
@@ -96,7 +116,8 @@ List<Movimentacao> movimentacoesOrdenadas = movimentacoesDoProduto.stream()
         })
         .toList();
 
-double estoqueCronologico = 0.0;
+    double estoqueCronologico = calcularEstoqueInicialHistorico(
+        movimentacao.getProduto(), movimentacoesDoProduto);
 
 for (Movimentacao outra : movimentacoesOrdenadas) {
 
@@ -153,7 +174,8 @@ if ("ENTRADA".equals(movimentacao.getTipo())) {
                     .filter(outra -> !outra.getId().equals(id))
                     .toList();
 
-    double estoqueCronologico = 0.0;
+    double estoqueCronologico = calcularEstoqueInicialHistorico(
+        movimentacao.getProduto(), movimentacoesDoProduto);
 
     for (Movimentacao outra : movimentacoesSemAExcluida) {
 
@@ -220,10 +242,17 @@ if ("ENTRADA".equals(movimentacao.getTipo())) {
             throw new IllegalArgumentException("A quantidade da entrada deve ser maior que zero.");
         }
 
-        Produto produto = produtoRepository.findById(produtoId)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado."));
+        
+        
+Produto produto = produtoRepository.findById(produtoId)
+        .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado."));
 
-        produto.setQuantidade(produto.getQuantidade() + quantidade);
+if (!produto.isAtivo()) {
+    throw new IllegalArgumentException(
+            "Este produto está desativado e não pode receber novas entradas.");
+}
+
+produto.setQuantidade(produto.getQuantidade() + quantidade);
         produtoRepository.save(produto);
 
         Lote lote = null;
@@ -260,8 +289,15 @@ if ("ENTRADA".equals(movimentacao.getTipo())) {
             throw new IllegalArgumentException("A quantidade da saída deve ser maior que zero.");
         }
 
-        Produto produto = produtoRepository.findById(produtoId)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado."));
+        
+        
+Produto produto = produtoRepository.findById(produtoId)
+        .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado."));
+
+if (!produto.isAtivo()) {
+    throw new IllegalArgumentException(
+            "Este produto está desativado e não pode ter novas saídas.");
+}
 
         if (quantidade > produto.getQuantidade()) {
             throw new IllegalArgumentException("A quantidade da saída não pode ser maior que o estoque atual.");
@@ -293,9 +329,16 @@ if ("ENTRADA".equals(movimentacao.getTipo())) {
             throw new IllegalArgumentException("Selecione um motivo para o descarte.");
         }
 
-        Produto produto = produtoRepository.findById(produtoId)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado."));
+        
+       
+Produto produto = produtoRepository.findById(produtoId)
+        .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado."));
 
+if (!produto.isAtivo()) {
+    throw new IllegalArgumentException(
+            "Este produto está desativado e não pode ter novos descartes.");
+}
+;
         if (quantidade > produto.getQuantidade()) {
             throw new IllegalArgumentException("A quantidade do descarte não pode ser maior que o estoque atual.");
         }

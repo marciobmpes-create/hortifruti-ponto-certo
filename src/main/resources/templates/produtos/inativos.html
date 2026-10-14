@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos desativados | Horti Fruti Ponto Certo</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navegacao :: principal}"></div>
+
+    <main class="container">
+
+        <header class="cabecalho">
+            <div>
+                <p class="marca">Horti Fruti Ponto Certo</p>
+                <h1>Produtos desativados</h1>
+                <p class="subtitulo">
+                    Consulte os produtos desativados e reative aqueles
+                    que devem voltar à lista principal.
+                </p>
+            </div>
+
+            <div class="acoes">
+                <a class="botao botao-secundario"
+                   th:href="@{/produtos}">
+                    Voltar aos produtos
+                </a>
+            </div>
+        </header>
+
+        <p class="mensagem-sucesso"
+           th:if="${sucesso}"
+           th:text="${sucesso}">
+        </p>
+
+        <p class="erro-geral"
+           th:if="${erro}"
+           th:text="${erro}">
+        </p>
+
+        <section class="card">
+
+            <div th:if="${#lists.isEmpty(produtos)}" class="vazio">
+                <h2>Nenhum produto desativado</h2>
+                <p>
+                    Todos os produtos cadastrados estão ativos
+                    ou não há produtos nesta lista.
+                </p>
+                <a class="botao" th:href="@{/produtos}">
+                    Ver produtos ativos
+                </a>
+            </div>
+
+            <div class="tabela-responsiva"
+                 th:unless="${#lists.isEmpty(produtos)}">
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Categoria</th>
+                            <th>Estoque atual</th>
+                            <th>Unidade</th>
+                            <th>Situação</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr th:each="produto : ${produtos}">
+                            <td>
+                                <strong th:text="${produto.nome}"></strong>
+                            </td>
+
+                            <td th:text="${produto.categoria}"></td>
+
+                            <td th:text="${produto.quantidade}"></td>
+
+                            <td th:text="${produto.unidade}"></td>
+
+                            <td>
+                                <span class="status status-zerado">
+                                    Desativado
+                                </span>
+                            </td>
+
+                            <td>
+                                <form
+                                    th:action="@{/produtos/{id}/reativar(id=${produto.id})}"
+                                    method="post">
+
+                                    <button
+                                        type="submit"
+                                        class="botao">
+                                        Reativar produto
+                                    </button>
+
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </section>
+
+        <p class="subtitulo">
+            A reativação permite que o produto volte à lista principal.
+            O histórico de movimentações é preservado.
+        </p>
+
+    </main>
+
+</body>
+</html>

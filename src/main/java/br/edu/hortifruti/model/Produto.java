@@ -39,6 +39,8 @@ public class Produto {
     @NotNull(message = "Informe o estoque mínimo.")
     @PositiveOrZero(message = "O estoque mínimo não pode ser negativo.")
     private Double estoqueMinimo = 5.0;
+    @Column(nullable = true)
+    private Boolean ativo = true;
 
     public Produto() {
     }
@@ -97,4 +99,10 @@ public class Produto {
     public void setEstoqueMinimo(Double estoqueMinimo) {
         this.estoqueMinimo = estoqueMinimo;
     }
+    public boolean isAtivo() {
+    return ativo == null || ativo;
+}
+    public void setAtivo(Boolean ativo) {
+    this.ativo = ativo;
+}
 }

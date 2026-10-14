@@ -16,8 +16,16 @@
                 <p class="subtitulo">Consulte os produtos disponíveis no estoque.</p>
             </div>
             <div class="acoes">
-                <a class="botao" th:href="@{/produtos/novo}">Cadastrar produto</a>
-            </div>
+    <a class="botao botao-secundario"
+       th:href="@{/produtos/inativos}">
+        Produtos inativos
+    </a>
+
+    <a class="botao"
+       th:href="@{/produtos/novo}">
+        Cadastrar produto
+    </a>
+</div>
         </header>
 
         <form class="ordenacao" th:action="@{/produtos}" method="get">

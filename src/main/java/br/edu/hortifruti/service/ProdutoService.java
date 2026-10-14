@@ -21,9 +21,22 @@ public class ProdutoService {
         this.movimentacaoRepository = movimentacaoRepository;
     }
 
-    public List<Produto> listarTodos() {
-        return produtoRepository.findAll();
-    }
+    
+public List<Produto> listarTodos() {
+    return produtoRepository.findAll().stream()
+            .filter(Produto::isAtivo)
+            .collect(java.util.stream.Collectors.toList());
+}
+
+public List<Produto> listarInativos() {
+    return produtoRepository.findAll().stream()
+            .filter(produto -> !produto.isAtivo())
+            .sorted(Comparator.comparing(
+                    Produto::getNome,
+                    String.CASE_INSENSITIVE_ORDER))
+            .collect(java.util.stream.Collectors.toList());
+}
+
 
     public List<Produto> listarTodos(String ordem) {
         List<Produto> produtos = listarTodos();
@@ -51,6 +64,7 @@ public class ProdutoService {
 
    public Produto salvar(Produto produto) {
     produto.setQuantidade(0.0);
+    produto.setAtivo(true);
     return produtoRepository.save(produto);
 }
 
@@ -58,6 +72,10 @@ public class ProdutoService {
         return produtoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado."));
     }
+
+     public boolean possuiHistorico(Long id) {
+    return movimentacaoRepository.existsByProduto_Id(id);
+}
 
     public Produto atualizar(Long id, Produto dadosProduto) {
         Produto produto = buscarPorId(id);
@@ -67,14 +85,43 @@ public class ProdutoService {
         produto.setEstoqueMinimo(dadosProduto.getEstoqueMinimo());
         return produtoRepository.save(produto);
     }
+    
+public void excluir(Long id) {
+    Produto produto = buscarPorId(id);
 
-    public void excluir(Long id) {
-        Produto produto = buscarPorId(id);
-
-        if (movimentacaoRepository.existsByProduto_Id(id)) {
-            throw new IllegalArgumentException("Este produto possui movimentações no histórico e não pode ser excluído.");
-        }
-
-        produtoRepository.delete(produto);
+    if (movimentacaoRepository.existsByProduto_Id(id)) {
+        throw new IllegalArgumentException(
+                "Este produto possui histórico. Utilize a opção de desativar para preservar os registros.");
     }
+
+    if (produto.getQuantidade() != null && produto.getQuantidade() > 0) {
+        throw new IllegalArgumentException(
+                "Este produto ainda possui estoque. Resolva a quantidade disponível antes de excluí-lo.");
+    }
+
+    produtoRepository.delete(produto);
+}
+
+public void desativar(Long id) {
+    Produto produto = buscarPorId(id);
+
+    if (!produto.isAtivo()) {
+        throw new IllegalArgumentException("Este produto já está desativado.");
+    }
+
+    produto.setAtivo(false);
+    produtoRepository.save(produto);
+}
+
+public void reativar(Long id) {
+    Produto produto = buscarPorId(id);
+
+    if (produto.isAtivo()) {
+        throw new IllegalArgumentException("Este produto já está ativo.");
+    }
+
+    produto.setAtivo(true);
+    produtoRepository.save(produto);
+}
+
 }

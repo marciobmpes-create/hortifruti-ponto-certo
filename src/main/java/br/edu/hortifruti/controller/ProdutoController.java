@@ -32,6 +32,13 @@ public class ProdutoController {
         return "produtos/lista";
     }
 
+    @GetMapping("/inativos")
+    public String listarInativos(Model model) {
+    model.addAttribute("produtos", produtoService.listarInativos());
+    return "produtos/inativos";
+}
+
+
     @GetMapping("/novo")
     public String exibirFormulario(Model model) {
         model.addAttribute("produto", new Produto());
@@ -71,20 +78,56 @@ public class ProdutoController {
     }
 
     @GetMapping("/{id}/excluir")
-    public String exibirConfirmacaoExclusao(@PathVariable Long id, Model model) {
-        model.addAttribute("produto", produtoService.buscarPorId(id));
-        return "produtos/confirmar-exclusao";
-    }
+public String exibirConfirmacaoExclusao(@PathVariable Long id, Model model) {
+    Produto produto = produtoService.buscarPorId(id);
+
+    model.addAttribute("produto", produto);
+    model.addAttribute("possuiHistorico", produtoService.possuiHistorico(id));
+
+    return "produtos/confirmar-exclusao";
+}
 
     @PostMapping("/{id}/excluir")
-    public String excluir(@PathVariable Long id, RedirectAttributes atributosRedirecionamento) {
-        try {
-            produtoService.excluir(id);
-            atributosRedirecionamento.addFlashAttribute("sucesso", "Produto excluído com sucesso.");
-        } catch (IllegalArgumentException erro) {
-            atributosRedirecionamento.addFlashAttribute("erro", erro.getMessage());
-        }
+public String excluir(
+        @PathVariable Long id,
+        RedirectAttributes atributosRedirecionamento) {
 
-        return "redirect:/produtos";
+    try {
+        if (produtoService.possuiHistorico(id)) {
+            produtoService.desativar(id);
+            atributosRedirecionamento.addFlashAttribute(
+                    "sucesso",
+                    "Produto desativado com sucesso. O histórico foi preservado.");
+        } else {
+            produtoService.excluir(id);
+            atributosRedirecionamento.addFlashAttribute(
+                    "sucesso",
+                    "Produto excluído com sucesso.");
+        }
+    } catch (IllegalArgumentException erro) {
+        atributosRedirecionamento.addFlashAttribute("erro", erro.getMessage());
     }
+
+    return "redirect:/produtos";
+}
+
+@PostMapping("/{id}/reativar")
+public String reativar(
+        @PathVariable Long id,
+        RedirectAttributes atributosRedirecionamento) {
+
+    try {
+        produtoService.reativar(id);
+        atributosRedirecionamento.addFlashAttribute(
+                "sucesso",
+                "Produto reativado com sucesso.");
+    } catch (IllegalArgumentException erro) {
+        atributosRedirecionamento.addFlashAttribute(
+                "erro",
+                erro.getMessage());
+    }
+
+    return "redirect:/produtos/inativos";
+}
+
 }
